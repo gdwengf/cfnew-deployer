@@ -5,6 +5,7 @@ import { join, extname, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
+import { obfuscateSource } from './scripts/obfuscate-source.mjs';
 
 const 端口 = Number(process.env.PORT || 8790);
 const 静态目录 = resolve(import.meta.dirname, 'public');
@@ -76,6 +77,7 @@ async function 部署(数据) {
   const 部署方式 = 数据.deployType === 'worker' ? 'worker' : 'pages';
   记录(`准备${操作模式 === 'update' ? '更新' : '部署'} ${部署方式 === 'pages' ? 'Pages' : 'Worker'}: ${项目名}`);
   记录(`部署源: ${模式 === 'plain' ? '明文源吗' : '少年你相信光吗'}，实时联网拉取`);
+  记录('已启用代码混淆: 关键字符串Base64编码、注入虚假端点/死代码、随机注释噪声');
   if (操作模式 === 'update') {
     if (部署方式 === 'worker') {
       await 同步Worker代码(数据.credentials, {
@@ -260,6 +262,7 @@ function 校验部署参数(数据) {
 
 async function 部署Worker(凭据, 选项, 记录) {
   const 代码 = await 读取源代码(选项.sourceMode);
+  const 混淆代码 = obfuscateSource(代码, 选项.sourceMode);
   const 表单 = new FormData();
   const 元数据 = {
     main_module: 'worker.js',
@@ -270,12 +273,12 @@ async function 部署Worker(凭据, 选项, 记录) {
     ]
   };
   表单.append('metadata', new Blob([JSON.stringify(元数据)], { type: 'application/json' }), 'metadata.json');
-  表单.append('worker.js', new Blob([代码], { type: 'application/javascript+module' }), 'worker.js');
+  表单.append('worker.js', new Blob([混淆代码], { type: 'application/javascript+module' }), 'worker.js');
   await 调用接口(凭据, `/accounts/${选项.accountId}/workers/scripts/${encodeURIComponent(选项.scriptName)}`, {
     method: 'PUT',
     body: 表单
   });
-  记录('Worker 脚本上传完成');
+  记录('Worker 脚本上传完成（已混淆）');
   if (选项.enableWorkersDev) {
     await 启用WorkersDev(凭据, 选项.accountId, 选项.scriptName);
     记录('workers.dev 默认域名已启用');
@@ -284,16 +287,17 @@ async function 部署Worker(凭据, 选项, 记录) {
 
 async function 同步Worker代码(凭据, 选项, 记录) {
   const 代码 = await 读取源代码(选项.sourceMode);
+  const 混淆代码 = obfuscateSource(代码, 选项.sourceMode);
   const 设置 = await 读取Worker设置(凭据, 选项.accountId, 选项.scriptName);
   const 元数据 = 生成保留Worker元数据(设置);
   const 表单 = new FormData();
   表单.append('metadata', new Blob([JSON.stringify(元数据)], { type: 'application/json' }), 'metadata.json');
-  表单.append('worker.js', new Blob([代码], { type: 'application/javascript+module' }), 'worker.js');
+  表单.append('worker.js', new Blob([混淆代码], { type: 'application/javascript+module' }), 'worker.js');
   await 调用接口(凭据, `/accounts/${选项.accountId}/workers/scripts/${encodeURIComponent(选项.scriptName)}`, {
     method: 'PUT',
     body: 表单
   });
-  记录('Worker 代码已同步，现有绑定和设置按原值提交');
+  记录('Worker 代码已同步（已混淆），现有绑定和设置按原值提交');
 }
 
 async function 读取Worker设置(凭据, accountId, scriptName) {
@@ -335,7 +339,8 @@ async function 部署Pages(凭据, 选项, 记录) {
   const 临时目录 = await mkdtemp(join(tmpdir(), 'deploy-panel-pages-'));
   try {
     const 代码 = await 读取源代码(选项.sourceMode);
-    await writeFile(join(临时目录, '_worker.js'), 代码, 'utf8');
+    const 混淆代码 = obfuscateSource(代码, 选项.sourceMode);
+    await writeFile(join(临时目录, '_worker.js'), 混淆代码, 'utf8');
     await writeFile(join(临时目录, 'index.html'), '<!doctype html><meta charset="utf-8"><title>Deploy</title>', 'utf8');
     await writeFile(join(临时目录, 'wrangler.toml'), 生成PagesWrangler(选项), 'utf8');
     记录(`Pages 项目已配置: ${项目.name}`);
@@ -351,8 +356,8 @@ async function 部署Pages(凭据, 选项, 记录) {
       'true',
       '--no-bundle'
     ], 凭据, 选项.accountId, 临时目录);
-    输出.trim().split('\n').filter(Boolean).forEach(行 => 记录(`wrangler: ${行}`));
-    记录('Pages 部署上传完成');
+    输出.trim().split('\\n').filter(Boolean).forEach(行 => 记录(`wrangler: ${行}`));
+    记录('Pages 部署上传完成（已混淆）');
   } finally {
     await rm(临时目录, { recursive: true, force: true });
   }
@@ -368,7 +373,8 @@ async function 同步Pages代码(凭据, 选项, 记录) {
   const 临时目录 = await mkdtemp(join(tmpdir(), 'deploy-panel-pages-update-'));
   try {
     const 代码 = await 读取源代码(选项.sourceMode);
-    await writeFile(join(临时目录, '_worker.js'), 代码, 'utf8');
+    const 混淆代码 = obfuscateSource(代码, 选项.sourceMode);
+    await writeFile(join(临时目录, '_worker.js'), 混淆代码, 'utf8');
     记录('Pages 更新模式未写入 wrangler.toml，不修改 KV/变量/域名配置');
     const 输出 = await 运行Wrangler([
       'pages',
@@ -382,25 +388,15 @@ async function 同步Pages代码(凭据, 选项, 记录) {
       'true',
       '--no-bundle'
     ], 凭据, 选项.accountId, 临时目录);
-    输出.trim().split('\n').filter(Boolean).forEach(行 => 记录(`wrangler: ${行}`));
-    记录('Pages 代码同步完成');
+    输出.trim().split('\\n').filter(Boolean).forEach(行 => 记录(`wrangler: ${行}`));
+    记录('Pages 代码同步完成（已混淆）');
   } finally {
     await rm(临时目录, { recursive: true, force: true });
   }
 }
 
 function 生成PagesWrangler(选项) {
-  return `name = "${选项.projectName}"
-compatibility_date = "${兼容日期}"
-pages_build_output_dir = "."
-
-[vars]
-u = "${选项.uuid}"
-
-[[kv_namespaces]]
-binding = "${绑定名}"
-id = "${选项.kvId}"
-`;
+  return `name = "${选项.projectName}"\ncompatibility_date = "${兼容日期}"\npages_build_output_dir = "."\n\n[vars]\nu = "${选项.uuid}"\n\n[[kv_namespaces]]\nbinding = "${绑定名}"\nid = "${选项.kvId}"\n`;
 }
 
 async function 创建或更新Pages项目(凭据, 选项, 记录) {

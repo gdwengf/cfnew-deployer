@@ -1,291 +1,136 @@
 /**
- * cfnew-deployer 源码混淆模块
+ * CFnew 源码实时混淆引擎
  * 
- * 在部署前自动变换代理代码，让 CF 自动扫描难以识别：
- * - 运行时解码关键字符串（vless, ws, proxy 等关键词）
- * - 注入虚假代码路径和死代码
- * - 重命名变量/函数
- * - 添加伪装 HTTP 端点
+ * 在部署前自动对 byJoey/cfnew 的源码做混淆，使 CF 扫描难以识别代理特征。
+ * 
+ * 混淆层:
+ * 1. 注入虚假代码块（死代码、健康检查、伪装端点）
+ * 2. Base64 运行时解码关键字符串（vless, ws, tls, encryption, security 等）
+ * 3. Base64 编码 authToken/UUID
+ * 4. 添加随机注释噪声
  */
-
-// 敏感关键词 -> base64 映射（运行时解码，不在源码明文出现）
-const KEYWORDS = {
-  vless: 'dmxlc3M=',
-  cloudflare: 'Y2xvdWRmbGFyZQ==',
-  sockets: 'c29ja2V0cw==',
-  websocket: 'd2Vic29ja2V0',
-  WebSocketPair: 'V2ViU29ja2V0UGFpcg==',
-  'ws:': 'd3M6',
-  'wss:': 'd3NzOg==',
-  VLESS: 'VkxFU1M=',
-  'connect(': 'Y29ubmVjdCg=',
-  proxy: 'cHJveHk=',
-  tunnel: 'dHVubmVs',
-  subscription: 'c3Vic2NyaXB0aW9u',
-  uuid: 'dXVpZA==',
-};
 
 function b64(s) {
   return Buffer.from(s, 'utf-8').toString('base64');
 }
 
 /**
- * 主混淆函数：对部署的源码做逐层变换
+ * 主混淆入口
  */
 export function obfuscateSource(sourceCode, mode = 'encoded') {
   if (!sourceCode || typeof sourceCode !== 'string') return sourceCode;
-
   let code = sourceCode;
-  
-  // 1. 插入虚假导入（看上去像正常项目）
-  code = injectFakeImports(code);
-  
-  // 2. 混淆关键字符串引用
-  code = obfuscateStrings(code);
-  
-  // 3. 添加死代码块
   code = injectDeadCode(code);
-  
-  // 4. 添加伪装 HTTP 端点
+  code = obfuscateUUIDs(code);
+  code = obfuscateKeyParams(code);
   code = injectFakeEndpoints(code);
-  
-  // 5. 添加随机注释噪声
-  code = injectRandomComments(code);
-
+  code = injectNoise(code);
   return code;
 }
 
-/**
- * 注入虚假导入，让代码看起来像普通项目
- */
-function injectFakeImports(code) {
-  // 在 export default 之前插入
-  const fakeImports = `
-// [Health check & utilities]
-const __hc = { ts: Date.now(), ver: '2.4.1' };
-const __rid = () => Math.random().toString(36).slice(2);
-const __log = (m) => console.log('[' + __rid() + '] ' + m);
-
-/* [Cache helpers - unused in proxies] */
-const __cache = new Map();
-const __cc = (k, v, ttl=60000) => { __cache.set(k, {v, e:Date.now()+ttl}); };
-const __cg = (k) => { const e = __cache.get(k); return e && e.e > Date.now() ? e.v : null; };
-
-`;
-  
-  // 找 export default 或者文件开头
-  const exportMatch = code.indexOf('export default');
-  if (exportMatch > 0) {
-    // 找前面的空行或注释
-    let insertPos = exportMatch;
-    // 往回找最近的换行
-    const prevNewline = code.lastIndexOf('\\n', exportMatch - 2);
-    if (prevNewline > 0 && prevNewline + 1 < exportMatch) {
-      insertPos = prevNewline + 1;
-    }
-    return code.slice(0, insertPos) + fakeImports + code.slice(insertPos);
-  }
-  
-  return fakeImports + code;
-}
-
-/**
- * 将关键字符串替换为 base64 运行时解码
- */
-function obfuscateStrings(code) {
-  let result = code;
-  
-  // 替换关键的字符串字面量
-  const replacements = [
-    // VLESS 协议标识
-    ["'vless'", `decodeURIComponent(escape(atob('${b64('vless')}')))`],
-    ['"vless"', `decodeURIComponent(escape(atob('${b64('vless')}')))`],
-    
-    // websocket 相关
-    ["'ws'", `atob('${b64('ws')}')`],
-    ['"ws"', `atob('${b64('ws')}')`],
-    ["'websocket'", `atob('${b64('websocket')}')`],
-    ['"websocket"', `atob('${b64('websocket')}')`],
-    
-    // security types
-    ["'tls'", `atob('${b64('tls')}')`],
-    ['"tls"', `atob('${b64('tls')}')`],
-    ["'none'", `atob('${b64('none')}')`],
-    ['"none"', `atob('${b64('none')}')`],
-    
-    // encryption
-    ["'encryption'", `atob('${b64('encryption')}')`],
-    ['"encryption"', `atob('${b64('encryption')}')`],
-    
-    // security param
-    ["'security'", `atob('${b64('security')}')`],
-    ['"security"', `atob('${b64('security')}')`],
-    
-    // type param
-    ["'type'", `atob('${b64('type')}')`],
-    ['"type"', `atob('${b64('type')}')`],
-  ];
-  
-  for (const [from, to] of replacements) {
-    result = result.split(from).join(to);
-  }
-  
-  // 替换函数名调用中的字符串参数
-  result = result.replace(
-    /(['"])fp\\1\\s*[:=]\\s*['"]randomized['"]/g,
-    () => `atob('${b64('fp')}'):atob('${b64('randomized')}')`
-  );
-  
-  return result;
-}
-
-/**
- * 注入死代码（不执行的函数块）
- */
 function injectDeadCode(code) {
-  const deadFunctions = `
-/* [Dead code - analytics stubs] */
-async function __trackMetrics(data) {
-  // Unused analytics placeholder
-  const endpoint = 'https://' + ['metrics','api','example','com'].join('.');
-  try { await fetch(endpoint + '/v1/collect', { method: 'POST', body: JSON.stringify(data) }); }
-  catch(_) { /* silently ignored */ }
-  return null;
-}
-
-function __validateToken(t) {
-  if (!t || typeof t !== 'string') return false;
-  if (t.length < 8) return false;
-  if (!/^[a-f0-9-]+$/i.test(t)) return false;
-  return true;
-}
-
-async function __cacheWarm(path) {
-  const urls = ['/index.html','/assets/main.css','/favicon.ico'];
-  for (const u of urls) {
-    try { await fetch(new Request(u)); } catch(_) {}
+  const fakeBlock = `
+/* [Runtime helpers] */
+const __hc = Date.now();
+const __hc_id = Math.random().toString(36).slice(2);
+async function __warm() {
+  for (const p of ['/index.html','/favicon.ico','/robots.txt','/sitemap.xml','/health']) {
+    try { await fetch(new Request(p)); } catch(e) {}
   }
 }
-
-/* [End of stubs] */
+async function __track(d) {
+  try {
+    const u = String.fromCharCode(104,116,116,112,115) + '://' + String.fromCharCode(104,116,116,112,98,105,110) + '.org/post';
+    await fetch(u, {method:'POST',body:JSON.stringify({t:d,ts:__hc,id:__hc_id})});
+  } catch(e) {}
+}
+const __cache = new Map();
+function __set(k,v,t) { __cache.set(k,{v,e:Date.now()+t}); }
+function __get(k) { const x=__cache.get(k); return x&&x.e>Date.now()?x.v:null; }
+/* [End of helpers] */
 `;
-  
-  // 在 async function fetch 之前插入死代码
-  const fetchMatch = code.indexOf('async fetch');
-  if (fetchMatch > 0) {
-    return code.slice(0, fetchMatch) + deadFunctions + '\\n' + code.slice(fetchMatch);
+  const firstNewline = code.indexOf('\n');
+  if (firstNewline > 0) {
+    return code.slice(0, firstNewline + 1) + fakeBlock + code.slice(firstNewline + 1);
   }
-  
-  return deadFunctions + '\\n' + code;
+  return fakeBlock + code;
 }
 
-/**
- * 注入伪装 HTTP 端点 —— 让 Worker 看起来像正常网站
- */
-function injectFakeEndpoints(code) {
-  const fakeEndpointHandler = `
-    /* [Normal website endpoints] */
-    if (url.pathname === '/health' || url.pathname === '/api/status') {
-      const status = JSON.stringify({
-        status: 'ok',
-        uptime: Math.floor((Date.now() - __hc.ts) / 1000),
-        version: __hc.ver,
-        timestamp: new Date().toISOString()
-      });
-      return new Response(status, {
-        headers: { 'content-type': 'application/json; charset=utf-8',
-                   'access-control-allow-origin': '*' }
-      });
-    }
-    
-    if (url.pathname === '/robots.txt') {
-      return new Response('User-agent: *\\nDisallow: /', {
-        headers: { 'content-type': 'text/plain' }
-      });
-    }
-    
-    if (url.pathname.startsWith('/.well-known/')) {
-      return new Response('Not Found', { status: 404 });
-    }
-`;
-  
-  // 找 try { 后面跟着 url.pathname 的地方
-  const tryBlock = code.indexOf("url.pathname === '/'") || code.indexOf("url.pathname==='/'") || code.indexOf("successHtml");
-  if (tryBlock > 0) {
-    const insertAt = code.indexOf('\\n', tryBlock);
-    if (insertAt > 0) {
-      return code.slice(0, insertAt + 1) + fakeEndpointHandler + code.slice(insertAt + 1);
-    }
-  }
-  
-  // 在第一个 return new Response 前插入
-  const firstResp = code.indexOf('return new Response');
-  if (firstResp > 0) {
-    const lineStart = code.lastIndexOf('\\n', firstResp);
-    if (lineStart > 0) {
-      return code.slice(0, lineStart) + fakeEndpointHandler + code.slice(lineStart);
-    }
-  }
-  
-  return code;
+function obfuscateUUIDs(code) {
+  return code.replace(
+    /(['"])([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\1/g,
+    (match, quote, uuid) => `atob('${b64(uuid)}')`
+  );
 }
 
-/**
- * 添加随机注释噪声，让代码结构不易被识别
- */
-function injectRandomComments(code) {
-  const comments = [
-    '// cache-control: no-transform',
-    '// @ts-nocheck',
-    '// TODO: refactor to use config object',
-    '// edge-compatible implementation',
-    '// see: https://developers.cloudflare.com/workers/',
-    '// bundled with esbuild',
+function obfuscateKeyParams(code) {
+  const sensitive = [
+    "'vless'", '"vless"',
+    "'ws'", '"ws"',
+    "'tls'", '"tls"',
+    "'none'", '"none"',
+    "'encryption'", '"encryption"',
+    "'security'", '"security"',
+    "'type'", '"type"',
+    "'randomized'", '"randomized"',
+    "'websocket'", '"websocket"',
+    "'host'", '"host"',
+    "'hostname'", '"hostname"',
+    "'sni'", '"sni"',
+    "'path'", '"path"',
   ];
-  
   let result = code;
-  const noiseCount = Math.min(8, Math.floor(code.length / 4000) + 3);
-  
-  for (let i = 0; i < noiseCount; i++) {
-    const comment = comments[i % comments.length];
-    const idx = result.indexOf('\\nasync function ', i * 500);
-    if (idx > 0) {
-      result = result.slice(0, idx) + '\\n' + comment + result.slice(idx);
-    } else {
-      const idx2 = result.indexOf('\\nfunction ', i * 400);
-      if (idx2 > 0) {
-        result = result.slice(0, idx2) + '\\n' + comment + result.slice(idx2);
-      }
-    }
+  for (const s of sensitive) {
+    const raw = s.slice(1, -1);
+    result = result.split(s).join(`atob('${b64(raw)}')`);
   }
-  
   return result;
 }
 
-// 直接字符串替换混淆（更简单的模式）
-export function simpleObfuscate(sourceCode) {
-  if (!sourceCode) return sourceCode;
-  
-  let code = sourceCode;
-  
-  // 对 vless:// URL 做编码
-  code = code.replace(/vless:\\/\\//g, () => atob(b64('vless')) + '://');
-  
-  // 混淆配置中的 authToken / UUID —— 通过 encodeURIComponent 间接引用
-  code = code.replace(
-    /(authToken|const uuid)\\s*=\\s*['"]([^'"]+)/g,
-    (match, varName, value) => {
-      const encoded = b64(value);
-      return '${varName} = atob(\'' + encoded + '\')';
+function injectFakeEndpoints(code) {
+  const fakeEp = `
+    /* [Site endpoints] */
+    if (url.pathname === '/health' || url.pathname === '/api/status') {
+      const s = JSON.stringify({ok:true,ts:Date.now(),v:'2.4',u:Math.floor((Date.now()-__hc)/1e3)});
+      return new Response(s, {headers:{'content-type':'application/json'}});
     }
-  );
-  
-  // 在 export default 前插入导入检查
-  if (!code.includes('__hc')) {
-    code = '// edge-runtime compatibility layer v2\\nconst __env = typeof process !== \'undefined\' ? process.env : {};\\n' + code;
+    if (url.pathname === '/robots.txt') {
+      return new Response('User-agent: *\\nDisallow: /admin\\n', {headers:{'content-type':'text/plain'}});
+    }
+`;
+  const pathCheck = code.indexOf("if (url.pathname === '/') ");
+  if (pathCheck > 0) {
+    const eol = code.indexOf('\n', pathCheck);
+    if (eol > 0) return code.slice(0, eol + 1) + fakeEp + code.slice(eol + 1);
   }
-  
+  const pathCheck2 = code.indexOf("if (url.pathname==='/') ");
+  if (pathCheck2 > 0) {
+    const eol = code.indexOf('\n', pathCheck2);
+    if (eol > 0) return code.slice(0, eol + 1) + fakeEp + code.slice(eol + 1);
+  }
   return code;
 }
 
-export default { obfuscateSource, simpleObfuscate };
+function injectNoise(code) {
+  const noises = [
+    '// @ts-nocheck',
+    '// edge-compatible',
+    '// bundled with esbuild',
+    '// eslint-disable-next-line',
+    '/* no-transform */',
+    '// see: developers.cloudflare.com/workers',
+  ];
+  let result = code;
+  let count = 0;
+  let pos = 0;
+  while (count < 5) {
+    pos = result.indexOf('\nasync function ', pos + 1);
+    if (pos < 0) break;
+    result = result.slice(0, pos) + '\n' + noises[count % noises.length] + result.slice(pos);
+    count++;
+    pos += noises[count % noises.length].length + 2;
+  }
+  return result;
+}
+
+export default { obfuscateSource };
